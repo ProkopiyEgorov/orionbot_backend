@@ -27,21 +27,23 @@ def ask():
         }
 
         payload = {
-            "model": "meta-llama/Meta-Llama-3-8B-Instruct",
-            "messages": [
-                {"role": "user", "content": question}
-            ]
+            "inputs": question,
+            "parameters": {
+                "temperature": 0.7,
+                "max_new_tokens": 512
+            }
         }
 
         response = requests.post(
-            "https://api.deepinfra.com/v1/chat/completions",
+            "https://api.deepinfra.com/v1/inference/meta-llama/Meta-Llama-3-8B-Instruct",
             json=payload,
             headers=headers
         )
         response.raise_for_status()
         result = response.json()
 
-        answer = result["choices"][0]["message"]["content"]
+        # DeepInfra возвращает список ответов
+        answer = result[0]["generated_text"] if isinstance(result, list) else result.get("generated_text", "")
 
         return jsonify({"answer": answer})
 
