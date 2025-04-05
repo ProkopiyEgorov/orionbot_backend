@@ -1,44 +1,55 @@
-
+# app.py
 from flask import Flask, request, jsonify
-import os
+from flask_cors import CORS
 import requests
+import os
 
 app = Flask(__name__)
+CORS(app)
 
-DEEPINFRA_API_URL = "https://api.deepinfra.com/v1/openai/chat/completions"
-DEEPINFRA_API_KEY = os.environ.get("DEEPINFRA_API_KEY")
+DEEPINFRA_API_KEY = os.getenv("DEEPINFRA_API_KEY")  # переменная окружения
+MODEL_ID = "meta-llama/Meta-Llama-3-8B-Instruct"
 
-@app.route("/ask", methods=["POST"])
-def ask():
-    data = request.get_json()
-    question = data.get("question")
-
-    if not question:
-        return jsonify({"error": "No question provided"}), 400
-
-    headers = {
-        "Authorization": f"Bearer {DEEPINFRA_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "model": "meta-llama/Meta-Llama-3-8B-Instruct",
-        "messages": [{"role": "user", "content": question}],
-        "temperature": 0.7
-    }
-
-    response = requests.post(DEEPINFRA_API_URL, headers=headers, json=payload)
-
-    if response.status_code == 200:
-        answer = response.json()["choices"][0]["message"]["content"]
-        return jsonify({"answer": answer})
-    else:
-        return jsonify({"error": response.text}), 500
-
-@app.route("/", methods=["GET"])
-def index():
+@app.route('/')
+def home():
     return "OrionBot backend is running."
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+@app.route('/ask', methods=['POST'])
+def ask():
+    try:
+        data = request.get_json()
+        question = data.get("question", "")
+
+        if not question:
+            return jsonify({"answer": "Пожалуйста, введите вопрос."}), 400
+
+        headers = {
+            "Authorization": f"Bearer {DEEPINFRA_API_KEY}",
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "model": MODEL_ID,
+            "messages": [
+                {"role": "system", "content": "Ты юридический помощник, отвечай строго по закону РФ."},
+                {"role": "user", "content": question}
+            ]
+        }
+
+        response = requests.post(
+            "https://api.deepinfra.com/v1/chat/completions",
+            headers=headers,
+            json=payload
+        )
+
+        result = response.json()
+        answer = result["choices"][0]["message"]["content"]
+
+        return jsonify({"answer": answer})
+
+    except Exception as e:
+        print("Ошибка:", e)
+        return jsonify({"answer": "Произошла ошибка. Попробуйте позже."}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
