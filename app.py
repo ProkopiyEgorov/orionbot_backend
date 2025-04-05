@@ -25,18 +25,23 @@ def ask():
             "Authorization": f"Bearer {DEEPINFRA_API_KEY}",
             "Content-Type": "application/json"
         }
+
         payload = {
-            "inputs": question
+            "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+            "messages": [
+                {"role": "user", "content": question}
+            ]
         }
 
         response = requests.post(
-            "https://api.deepinfra.com/v1/inference/meta-llama/Meta-Llama-3-8B-Instruct",
+            "https://api.deepinfra.com/v1/chat/completions",
             json=payload,
             headers=headers
         )
         response.raise_for_status()
         result = response.json()
-        answer = result[0]["generated_text"]
+
+        answer = result["choices"][0]["message"]["content"]
 
         return jsonify({"answer": answer})
 
