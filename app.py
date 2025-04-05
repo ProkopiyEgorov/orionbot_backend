@@ -30,7 +30,7 @@ def ask():
             "messages": [{"role": "user", "content": question}]
         }
 
-        response = requests.post("https://api.deepinfra.com/v1/chat/completions", json=payload, headers=headers)
+        response = requests.post("https://api.deepinfra.com/v1/inference/meta-llama/Meta-Llama-3-8B-Instruct", json=payload, headers=headers)
         response.raise_for_status()
         result = response.json()
         answer = result["choices"][0]["message"]["content"]
