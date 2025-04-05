@@ -27,7 +27,7 @@ def ask():
         }
 
         payload = {
-            "inputs": question,
+            "inputs": f"User: {question}\nAssistant:",
             "parameters": {
                 "temperature": 0.7,
                 "max_new_tokens": 512
@@ -42,8 +42,7 @@ def ask():
         response.raise_for_status()
         result = response.json()
 
-        # DeepInfra возвращает список ответов
-        answer = result[0]["generated_text"] if isinstance(result, list) else result.get("generated_text", "")
+        answer = result[0]["generated_text"].split("Assistant:")[-1].strip()
 
         return jsonify({"answer": answer})
 
