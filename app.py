@@ -26,19 +26,22 @@ def ask():
             "Content-Type": "application/json"
         }
         payload = {
-            "model": "meta-llama/Meta-Llama-3-8B-Instruct",
-            "messages": [{"role": "user", "content": question}]
+            "inputs": question
         }
 
-        response = requests.post("https://api.deepinfra.com/v1/inference/meta-llama/Meta-Llama-3-8B-Instruct", json=payload, headers=headers)
+        response = requests.post(
+            "https://api.deepinfra.com/v1/inference/meta-llama/Meta-Llama-3-8B-Instruct",
+            json=payload,
+            headers=headers
+        )
         response.raise_for_status()
         result = response.json()
-        answer = result["choices"][0]["message"]["content"]
+        answer = result[0]["generated_text"]
 
         return jsonify({"answer": answer})
 
     except Exception as e:
-        print(e)
+        print("Ошибка:", e)
         return jsonify({"answer": "Произошла ошибка. Попробуйте позже."}), 500
 
 if __name__ == "__main__":
