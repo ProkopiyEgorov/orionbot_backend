@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import requests
 import os
+import requests
 
 app = Flask(__name__)
 CORS(app)
@@ -29,8 +29,7 @@ def ask():
         payload = {
             "inputs": f"User: {question}\nAssistant:",
             "parameters": {
-                "temperature": 0.7,
-                "max_new_tokens": 512
+                "temperature": 0.7
             }
         }
 
@@ -41,7 +40,6 @@ def ask():
         )
         response.raise_for_status()
         result = response.json()
-
         answer = result[0]["generated_text"].split("Assistant:")[-1].strip()
 
         return jsonify({"answer": answer})
