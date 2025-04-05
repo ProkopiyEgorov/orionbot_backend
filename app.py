@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import os
 import requests
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -25,22 +25,15 @@ def ask():
             "Authorization": f"Bearer {DEEPINFRA_API_KEY}",
             "Content-Type": "application/json"
         }
-
         payload = {
-            "inputs": f"User: {question}\nAssistant:",
-            "parameters": {
-                "temperature": 0.7
-            }
+            "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+            "messages": [{"role": "user", "content": question}]
         }
 
-        response = requests.post(
-            "https://api.deepinfra.com/v1/inference/meta-llama/Meta-Llama-3-8B-Instruct",
-            json=payload,
-            headers=headers
-        )
+        response = requests.post("https://api.deepinfra.com/v1/openai/chat/completions", json=payload, headers=headers)
         response.raise_for_status()
         result = response.json()
-        answer = result[0]["generated_text"].split("Assistant:")[-1].strip()
+        answer = result["choices"][0]["message"]["content"]
 
         return jsonify({"answer": answer})
 
